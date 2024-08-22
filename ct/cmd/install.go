@@ -79,6 +79,8 @@ func addInstallFlags(flags *flag.FlagSet) {
 		(e.g. "--set=name=value"`))
 	flags.Bool("skip-clean-up", false, heredoc.Doc(`
 		Skip resources clean-up. Used if need to continue other flows or keep it around.`))
+	flags.String("kubeconfig", "~/.kube/config", heredoc.Doc(`
+		Path to the kubeconfig file`))
 }
 
 func install(cmd *cobra.Command, _ []string) error {

@@ -26,6 +26,7 @@
     ],
     "helm-extra-args": "--timeout 300s",
     "helm-lint-extra-args": "--quiet",
+    "kubeconfig": "/my/kube/config",
     "upgrade": true,
     "skip-missing-values": true,
     "namespace": "default",

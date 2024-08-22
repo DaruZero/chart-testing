@@ -63,6 +63,7 @@ type Configuration struct {
 	HelmLintExtraArgs       string        `mapstructure:"helm-lint-extra-args"`
 	HelmRepoExtraArgs       []string      `mapstructure:"helm-repo-extra-args"`
 	HelmDependencyExtraArgs []string      `mapstructure:"helm-dependency-extra-args"`
+	Kubeconfig              string        `mapstructure:"kubeconfig"`
 	Debug                   bool          `mapstructure:"debug"`
 	Upgrade                 bool          `mapstructure:"upgrade"`
 	SkipMissingValues       bool          `mapstructure:"skip-missing-values"`
