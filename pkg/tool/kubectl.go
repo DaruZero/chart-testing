@@ -14,14 +14,16 @@ import (
 )
 
 type Kubectl struct {
-	exec    exec.ProcessExecutor
-	timeout time.Duration
+	kubeconfig string
+	exec       exec.ProcessExecutor
+	timeout    time.Duration
 }
 
-func NewKubectl(exec exec.ProcessExecutor, timeout time.Duration) Kubectl {
+func NewKubectl(exec exec.ProcessExecutor, timeout time.Duration, kubeconfig string) Kubectl {
 	return Kubectl{
-		exec:    exec,
-		timeout: timeout,
+		kubeconfig: kubeconfig,
+		exec:       exec,
+		timeout:    timeout,
 	}
 }
 
@@ -29,7 +31,7 @@ func NewKubectl(exec exec.ProcessExecutor, timeout time.Duration) Kubectl {
 func (k Kubectl) CreateNamespace(namespace string) error {
 	fmt.Printf("Creating namespace %q...\n", namespace)
 	return k.exec.RunProcess("kubectl",
-		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		fmt.Sprintf("--request-timeout=%s --kubeconfig=%s", k.timeout, k.kubeconfig),
 		"create", "namespace", namespace)
 }
 
@@ -39,7 +41,7 @@ func (k Kubectl) DeleteNamespace(namespace string) {
 	fmt.Printf("Deleting namespace %q...\n", namespace)
 	timeoutSec := "180s"
 	err := k.exec.RunProcess("kubectl",
-		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		fmt.Sprintf("--request-timeout=%s --kubeconfig=%s", k.timeout, k.kubeconfig),
 		"delete", "namespace", namespace, "--timeout", timeoutSec)
 	if err != nil {
 		fmt.Printf("Namespace %q did not terminate after %s.\n", namespace, timeoutSec)
@@ -50,7 +52,7 @@ func (k Kubectl) DeleteNamespace(namespace string) {
 
 		fmt.Println("Force-deleting everything...")
 		err = k.exec.RunProcess("kubectl",
-			fmt.Sprintf("--request-timeout=%s", k.timeout),
+			fmt.Sprintf("--request-timeout=%s --kubeconfig=%s", k.timeout, k.kubeconfig),
 			"delete", "all", "--namespace", namespace, "--all", "--force",
 			"--grace-period=0")
 		if err != nil {
@@ -134,7 +136,7 @@ func (k Kubectl) forceNamespaceDeletion(namespace string) error {
 
 	fmt.Printf("Force-deleting namespace %q...\n", namespace)
 	err = k.exec.RunProcess("kubectl",
-		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		fmt.Sprintf("--request-timeout=%s --kubeconfig=%s", k.timeout, k.kubeconfig),
 		"delete", "namespace", namespace, "--force", "--grace-period=0",
 		"--ignore-not-found=true")
 	if err != nil {
@@ -158,7 +160,7 @@ func (k Kubectl) WaitForDeployments(namespace string, selector string) error {
 	for _, deployment := range deployments {
 		deployment = strings.Trim(deployment, "'")
 		err = k.exec.RunProcess("kubectl",
-			fmt.Sprintf("--request-timeout=%s", k.timeout),
+			fmt.Sprintf("--request-timeout=%s --kubeconfig=%s", k.timeout, k.kubeconfig),
 			"rollout", "status", "deployment", deployment, "--namespace", namespace)
 		if err != nil {
 			return err
@@ -221,19 +223,19 @@ func (k Kubectl) GetPods(args ...string) ([]string, error) {
 
 func (k Kubectl) GetEvents(namespace string) error {
 	return k.exec.RunProcess("kubectl",
-		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		fmt.Sprintf("--request-timeout=%s --kubeconfig=%s", k.timeout, k.kubeconfig),
 		"get", "events", "--output", "wide", "--namespace", namespace, "--sort-by", "lastTimestamp")
 }
 
 func (k Kubectl) DescribePod(namespace string, pod string) error {
 	return k.exec.RunProcess("kubectl",
-		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		fmt.Sprintf("--request-timeout=%s --kubeconfig=%s", k.timeout, k.kubeconfig),
 		"describe", "pod", pod, "--namespace", namespace)
 }
 
 func (k Kubectl) Logs(namespace string, pod string, container string) error {
 	return k.exec.RunProcess("kubectl",
-		fmt.Sprintf("--request-timeout=%s", k.timeout),
+		fmt.Sprintf("--request-timeout=%s --kubeconfig=%s", k.timeout, k.kubeconfig),
 		"logs", pod, "--namespace", namespace, "--container", container)
 }
 

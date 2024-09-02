@@ -267,9 +267,9 @@ func NewTesting(config config.Configuration, extraSetArgs string) (Testing, erro
 
 	testing := Testing{
 		config:           config,
-		helm:             tool.NewHelm(procExec, helmExtraArgs, helmLintExtraArgs, strings.Fields(extraSetArgs)),
+		helm:             tool.NewHelm(procExec, helmExtraArgs, helmLintExtraArgs, strings.Fields(extraSetArgs), config.Kubeconfig),
 		git:              tool.NewGit(procExec),
-		kubectl:          tool.NewKubectl(procExec, config.KubectlTimeout),
+		kubectl:          tool.NewKubectl(procExec, config.KubectlTimeout, config.Kubeconfig),
 		linter:           tool.NewLinter(procExec),
 		cmdExecutor:      tool.NewCmdTemplateExecutor(procExec),
 		accountValidator: tool.AccountValidator{},

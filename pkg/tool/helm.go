@@ -22,14 +22,16 @@ import (
 )
 
 type Helm struct {
-	exec          exec.ProcessExecutor
+	kubeconfig    string
 	extraArgs     []string
 	lintExtraArgs []string
 	extraSetArgs  []string
+	exec          exec.ProcessExecutor
 }
 
-func NewHelm(exec exec.ProcessExecutor, extraArgs, lintExtraArgs, extraSetArgs []string) Helm {
+func NewHelm(exec exec.ProcessExecutor, extraArgs, lintExtraArgs, extraSetArgs []string, kubeconfig string) Helm {
 	return Helm{
+		kubeconfig:    kubeconfig,
 		exec:          exec,
 		extraArgs:     extraArgs,
 		lintExtraArgs: lintExtraArgs,
@@ -72,21 +74,27 @@ func (h Helm) InstallWithValues(chart string, valuesFile string, namespace strin
 	}
 
 	return h.exec.RunProcess("helm", "install", release, chart, "--namespace", namespace,
-		"--wait", values, h.extraArgs, h.extraSetArgs)
+		"--wait", values, h.extraArgs, h.extraSetArgs,
+		fmt.Sprintf("--kubeconfig=%s", h.kubeconfig),
+	)
 }
 
 func (h Helm) Upgrade(chart string, namespace string, release string) error {
 	return h.exec.RunProcess("helm", "upgrade", release, chart, "--namespace", namespace,
-		"--reuse-values", "--wait", h.extraArgs, h.extraSetArgs)
+		"--reuse-values", "--wait", h.extraArgs, h.extraSetArgs,
+		fmt.Sprintf("--kubeconfig=%s", h.kubeconfig),
+	)
 }
 
 func (h Helm) Test(namespace string, release string) error {
-	return h.exec.RunProcess("helm", "test", release, "--namespace", namespace, h.extraArgs)
+	return h.exec.RunProcess("helm", "test", release, "--namespace", namespace, h.extraArgs,
+		fmt.Sprintf("--kubeconfig=%s", h.kubeconfig),
+	)
 }
 
 func (h Helm) DeleteRelease(namespace string, release string) {
 	fmt.Printf("Deleting release %q...\n", release)
-	if err := h.exec.RunProcess("helm", "uninstall", release, "--namespace", namespace, h.extraArgs); err != nil {
+	if err := h.exec.RunProcess("helm", "uninstall", release, "--namespace", namespace, h.extraArgs, fmt.Sprintf("--kubeconfig=%s", h.kubeconfig)); err != nil {
 		fmt.Println("Error deleting Helm release:", err)
 	}
 }
